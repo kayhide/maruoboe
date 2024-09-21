@@ -1,0 +1,4 @@
+jazz1,https://www.kannoyoshitaka.com/maruoboe1mp3/,菅野義孝,まる覚えジャズギター1,Jazz
+jazz2,https://www.kannoyoshitaka.com/%e3%81%be%e3%82%8b%e8%a6%9a%e3%81%88%e3%82%b8%e3%83%a3%e3%82%ba%e3%82%ae%e3%82%bf%e3%83%bc%ef%bc%92-%e9%9f%b3%e6%ba%90/,菅野義孝,まる覚えジャズギター2,Jazz
+jazz3,https://www.kannoyoshitaka.com/maruoboe3mp3/,菅野義孝,まる覚えジャズギター3,Jazz
+jazz4,https://www.kannoyoshitaka.com/maruoboe4mp3/,菅野義孝,まる覚えジャズギター4,Jazz

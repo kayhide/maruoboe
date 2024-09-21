@@ -1,0 +1,112 @@
+#!/usr/bin/env bash
+
+# dependencies:
+# eyeD3
+# curl
+
+set -eu
+
+BASE_DIR="$(cd "$(dirname "$0")/.." > /dev/null 2>&1 && pwd)"
+cd "$BASE_DIR"
+
+INDEX="data/index.txt"
+
+reset="\e[0m"
+green="\e[32m"
+yellow="\e[33m"
+blue="\e[34m"
+gray="\e[90m"
+
+visit() {
+  if [[ -z ${2:-} ]]; then
+    scope=""
+    fn="$1"
+  else
+    scope="$1"
+    fn="$2"
+  fi
+  cat "$INDEX" | while read -r line; do
+    name="$(echo "$line" | cut -d, -f1)"
+    url="$(echo "$line" | cut -d, -f2)"
+    artist="$(echo "$line" | cut -d, -f3)"
+    album="$(echo "$line" | cut -d, -f4)"
+    genre="$(echo "$line" | cut -d, -f5)"
+    if [[ -z $scope || $name == "$scope" ]]; then
+      "$fn" "$name" "$url" "$artist" "$album" "$genre"
+    fi
+  done
+}
+
+show() {
+  local name="$1"
+  local url="$2"
+  local artist="$3"
+  local album="$4"
+  local genre="$5"
+  printf "\e[32m%s\e[0m\n" "$name"
+  printf "%s\n%s\n%s\n%s\n" "$url" "$artist" "$album" "$genre"
+}
+
+fetch() {
+  local name="$1"
+  local url="$2"
+  local dst="tmp/html/$name.html"
+  if [[ ! -e $dst ]]; then
+    mkdir -p "$(dirname "$dst")"
+    curl --silent "$url" > "$dst"
+  fi
+  cat "$dst"
+}
+
+parse() {
+  local song=""
+  local title=""
+  local audio=""
+  local str=""
+  fetch "$@" | htmlq h2,p.u-mb-ctrl,audio | while read -r elm; do
+    str="$(echo "$elm" | htmlq h2 --text)"
+    if [[ -n $str ]]; then
+      song="$str"
+    else
+      str="$(echo "$elm" | htmlq p --text)"
+      if [[ -n $str ]]; then
+        title="$str"
+      else
+        str="$(echo "$elm" | htmlq audio --attribute src)"
+        if [[ -n $str ]]; then
+          audio="$str"
+          echo "$song,$title,$audio"
+        fi
+      fi
+    fi
+  done
+}
+
+process() {
+  local name="$1"
+  local artist="$3"
+  local album="$4"
+  local genre="$5"
+  parse "$@" | while read -r line; do
+    song="$(cut -d, -f1 <<<"$line")"
+    title="$(cut -d, -f2 <<<"$line")"
+    audio="$(cut -d, -f3 <<<"$line")"
+    num="$(cut -d' ' -f1 <<<"$title")"
+    var="$(cut -d' ' -f2 <<<"$title")"
+
+    dst="tmp/audio/$name/$num.mp3"
+    mkdir -p "$(dirname "$dst")"
+    if [[ ! -e $dst ]]; then
+      curl --silent "$audio" > "$dst"
+      printf "  $green%s$reset $gray%s$reset $blue%s$reset - %s\n" create "$dst" "$song" "$var"
+    else
+      printf "   $yellow%s$reset $gray%s$reset $blue%s$reset - %s\n" exist "$dst" "$song" "$var"
+    fi
+    eyeD3 --to-v2.4 --remove-v1 "$dst"
+    eyeD3 -2 -G "$genre" -a "$artist" -A "$album" -t "$song - $var" "$dst"
+  done
+}
+
+visit process
+
+echo ok
