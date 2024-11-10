@@ -110,3 +110,8 @@ process() {
 visit process
 
 echo ok
+
+# jazz2/047.mp3 is actually not mp3 but wav. Run the following to fix it.
+# ffmpeg -i tmp/audio/jazz2/047.mp3 -acodec mp3 -b:a 256k 047.mp3
+# mv 047.mp3 tmp/audio/jazz2/047.mp3
+# visit jazz2 process
