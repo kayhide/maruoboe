@@ -82,6 +82,19 @@ parse() {
   done
 }
 
+declare -A ja_en
+
+# Read the conversion table file line by line
+while IFS=':' read -r ja en; do
+    if [[ -n "$ja" || -n "$en" ]]; then
+      ja_en["$ja"]="$en"
+    fi
+done < data/ja_en.txt
+
+to_en() {
+  echo "${ja_en["$1"]}"
+}
+
 process() {
   local name="$1"
   local artist="$3"
@@ -94,7 +107,8 @@ process() {
     num="$(cut -d' ' -f1 <<<"$title")"
     var="$(cut -d' ' -f2 <<<"$title")"
 
-    dst="tmp/audio/$name/$num.mp3"
+    basename="${num%%-*} $(echo $song | sed 's/[^a-zA-Z0-9._ -]/_/g') - $(to_en "$var")"
+    dst="tmp/audio/$name/$basename.mp3"
     mkdir -p "$(dirname "$dst")"
     if [[ ! -e $dst ]]; then
       curl --silent "$audio" > "$dst"
@@ -102,8 +116,8 @@ process() {
     else
       printf "   $yellow%s$reset $gray%s$reset $blue%s$reset - %s\n" exist "$dst" "$song" "$var"
     fi
-    eyeD3 --to-v2.4 --remove-v1 "$dst"
-    eyeD3 -2 -G "$genre" -a "$artist" -A "$album" -t "$song - $var" "$dst"
+    eyeD3 --to-v2.4 --remove-v1 "$dst" > /dev/null
+    eyeD3 -2 -G "$genre" -a "$artist" -A "$album" -t "$song - $var" "$dst" > /dev/null
   done
 }
 
@@ -111,7 +125,8 @@ visit process
 
 echo ok
 
-# jazz2/047.mp3 is actually not mp3 but wav. Run the following to fix it.
-# ffmpeg -i tmp/audio/jazz2/047.mp3 -acodec mp3 -b:a 256k 047.mp3
-# mv 047.mp3 tmp/audio/jazz2/047.mp3
+# "jazz2/047 I Remember You - bass.mp3" is actually not mp3 but wav. Run the following to fix it.
+# f="jazz2/047 I Remember You - bass.mp3"
+# fmpeg -i "tmp/audio/$f" -acodec mp3 -b:a 256k 047.mp3
+# mv 047.mp3 "tmp/audio/$f"
 # visit jazz2 process

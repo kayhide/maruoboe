@@ -1,0 +1,8 @@
+アドリブ:adlib
+アドリブ１:adlib1
+アドリブ２:adlib2
+シンプルなキザミ:simple
+シンプルバッキング:simple
+ハーモナイズド・ベースライン:bass
+バッキング:backing
+リズムパターンのバッキング:rhythm
