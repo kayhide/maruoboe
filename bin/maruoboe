@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 # dependencies:
+# uni2ascii
 # eyeD3
 # curl
 
@@ -107,7 +108,8 @@ process() {
     num="$(cut -d' ' -f1 <<<"$title")"
     var="$(cut -d' ' -f2 <<<"$title")"
 
-    basename="${num%%-*} $(echo $song | sed 's/[^a-zA-Z0-9._ -]/_/g') - $(to_en "$var")"
+    basename="${num%%-*} $(echo $song | uni2ascii -B -q | sed 's/[^a-zA-Z0-9._ -]/_/g') - $(to_en "$var")"
+
     dst="tmp/audio/$name/$basename.mp3"
     mkdir -p "$(dirname "$dst")"
     if [[ ! -e $dst ]]; then
